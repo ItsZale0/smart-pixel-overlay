@@ -32,12 +32,12 @@ class MainActivity : AppCompatActivity() {
                 if (grantResult == PackageManager.PERMISSION_GRANTED && pendingShizukuGrant) {
                     pendingShizukuGrant = false
                     runShizukuGrant { ok ->
-                        if (ok) maybeApply() else Toast.makeText(this, "Comando Shizuku fallito o permesso non concesso", Toast.LENGTH_LONG).show()
+                        if (ok) maybeApply() else Toast.makeText(this, R.string.toast_shizuku_cmd_failed, Toast.LENGTH_LONG).show()
                     }
                 } else {
                     pendingShizukuGrant = false
                     if (grantResult != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(this, "Permesso Shizuku negato", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, R.string.toast_shizuku_denied, Toast.LENGTH_SHORT).show()
                     }
                 }
                 updateStatus()
@@ -181,10 +181,10 @@ class MainActivity : AppCompatActivity() {
                         b.btnRootGrant.isEnabled = true
                         if (ok) {
                             cachedHasSu = true
-                            Toast.makeText(this, "Permesso overlay concesso (root)", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, R.string.toast_root_granted, Toast.LENGTH_SHORT).show()
                             maybeApply()
                         } else {
-                            Toast.makeText(this, "Impossibile concedere con root. Verifica root/su o usa Shizuku/ADB.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, R.string.toast_root_failed, Toast.LENGTH_LONG).show()
                         }
                         updateStatus()
                     }
@@ -194,18 +194,18 @@ class MainActivity : AppCompatActivity() {
 
         b.btnShizukuGrant.setOnClickListener {
             if (!ShizukuUtils.isAvailable()) {
-                Toast.makeText(this, "Shizuku non disponibile o non in esecuzione", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, R.string.toast_shizuku_unavailable, Toast.LENGTH_LONG).show()
                 updateStatus()
                 return@setOnClickListener
             }
             if (ShizukuUtils.hasPermission()) {
                 runShizukuGrant { ok ->
-                    if (ok) maybeApply() else Toast.makeText(this, "Comando Shizuku fallito", Toast.LENGTH_LONG).show()
+                    if (ok) maybeApply() else Toast.makeText(this, R.string.toast_shizuku_cmd_failed, Toast.LENGTH_LONG).show()
                 }
             } else {
                 pendingShizukuGrant = true
                 ShizukuUtils.requestPermission()
-                Toast.makeText(this, "Richiesta permesso Shizuku inviata...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.toast_shizuku_requested, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -235,10 +235,10 @@ class MainActivity : AppCompatActivity() {
                         if (!isFinishing && !isDestroyed) {
                             if (ok) {
                                 cachedHasSu = true
-                                Toast.makeText(this, "Permesso concesso", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, R.string.toast_permission_granted, Toast.LENGTH_SHORT).show()
                                 onGranted()
                             } else {
-                                Toast.makeText(this, "Root non disponibile o comando fallito", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this, R.string.toast_root_unavailable, Toast.LENGTH_LONG).show()
                             }
                             updateStatus()
                         }
@@ -288,9 +288,9 @@ class MainActivity : AppCompatActivity() {
         val c = cachedShizuku
         if (c != null) return c
         val s = when {
-            !ShizukuUtils.isAvailable() -> "no"
-            ShizukuUtils.hasPermission() -> "ok"
-            else -> "permesso richiesto"
+            !ShizukuUtils.isAvailable() -> getString(R.string.status_no_short)
+            ShizukuUtils.hasPermission() -> getString(R.string.status_ok)
+            else -> getString(R.string.status_permission_required)
         }
         cachedShizuku = s
         return s
@@ -304,8 +304,8 @@ class MainActivity : AppCompatActivity() {
                 if (!isFinishing && !isDestroyed) {
                     b.btnShizukuGrant.isEnabled = true
                     if (ok) {
-                        cachedShizuku = "ok"
-                        Toast.makeText(this, "Permesso overlay concesso (Shizuku)", Toast.LENGTH_SHORT).show()
+                        cachedShizuku = getString(R.string.status_ok)
+                        Toast.makeText(this, R.string.toast_shizuku_granted, Toast.LENGTH_SHORT).show()
                     }
                     updateStatus()
                     onDone(ok)
@@ -320,8 +320,12 @@ class MainActivity : AppCompatActivity() {
         val rootCached = cachedHasSu
         val shizuku = getShizukuStatus()
         val native = NativeSmartPixel.detect(this)
-        val nativeStr = if (native != null) "sì (${native.enableKey})" else "no"
-        b.textStatus.text = "Overlay: ${if (overlay) "OK" else "NO"} | Root: ${when (rootCached) { true -> "rilevato"; false -> "no"; null -> "..." }} | Shizuku: $shizuku | Nativo ROM: $nativeStr | Attivo: ${if (eff) "sì" else "no"}"
+        val nativeStr = if (native != null) "${getString(R.string.status_yes)} (${native.enableKey})" else getString(R.string.status_no_short)
+        b.textStatus.text = "${getString(R.string.status_overlay)}: ${if (overlay) getString(R.string.status_ok) else getString(R.string.status_no)} | " +
+            "${getString(R.string.status_root)}: ${when (rootCached) { true -> getString(R.string.status_detected); false -> getString(R.string.status_no_short); null -> getString(R.string.status_checking) }} | " +
+            "${getString(R.string.status_shizuku)}: $shizuku | " +
+            "${getString(R.string.status_native_rom)}: $nativeStr | " +
+            "${getString(R.string.status_active)}: ${if (eff) getString(R.string.status_yes) else getString(R.string.status_no_short)}"
         if (rootCached == null && !suCheckInFlight) {
             suCheckInFlight = true
             thread {
@@ -334,8 +338,12 @@ class MainActivity : AppCompatActivity() {
                         val e = effectiveEnabled()
                         val sh = getShizukuStatus()
                         val n = NativeSmartPixel.detect(this)
-                        val ns = if (n != null) "sì (${n.enableKey})" else "no"
-                        b.textStatus.text = "Overlay: ${if (ov) "OK" else "NO"} | Root: ${if (root) "rilevato" else "no"} | Shizuku: $sh | Nativo ROM: $ns | Attivo: ${if (e) "sì" else "no"}"
+                        val ns = if (n != null) "${getString(R.string.status_yes)} (${n.enableKey})" else getString(R.string.status_no_short)
+                        b.textStatus.text = "${getString(R.string.status_overlay)}: ${if (ov) getString(R.string.status_ok) else getString(R.string.status_no)} | " +
+                            "${getString(R.string.status_root)}: ${if (root) getString(R.string.status_detected) else getString(R.string.status_no_short)} | " +
+                            "${getString(R.string.status_shizuku)}: $sh | " +
+                            "${getString(R.string.status_native_rom)}: $ns | " +
+                            "${getString(R.string.status_active)}: ${if (e) getString(R.string.status_yes) else getString(R.string.status_no_short)}"
                     }
                 }
             }

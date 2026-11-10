@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">Smart Pixel</string>
+    <string name="tile_label">Smart Pixel</string>
+    <string name="enable_smart_pixels">Abilita Smart Pixel</string>
+    <string name="enable_on_battery_saver">Attiva con risparmio energetico</string>
+    <string name="pattern">Pattern (griglia)</string>
+    <string name="intensity">Intensità (% pixel spenti)</string>
+    <string name="shift_timeout">Intervallo spostamento</string>
+    <string name="overlay_permission_title">Permesso overlay richiesto</string>
+    <string name="overlay_permission_msg">Concedi il permesso "Mostra sopra altre app" per applicare il filtro Smart Pixel.</string>
+    <string name="grant">Concedi</string>
+    <string name="cancel">Annulla</string>
+    <string name="root_grant">Concedi con root</string>
+    <string name="shizuku_grant">Concedi con Shizuku</string>
+    <string name="native_mode">Usa Smart Pixel nativo ROM (se disponibile, root/Shizuku)</string>
+    <string name="service_running">Filtro Smart Pixel attivo</string>
+    <string name="service_channel">Smart Pixel</string>
+    <string name="pattern_0">Griglia 2x2</string>
+    <string name="pattern_1">Griglia 3x3</string>
+    <string name="pattern_2">Griglia 4x4</string>
+    <string name="pattern_3">Griglia 6x6</string>
+    <string name="pattern_4">Diagonale</string>
+    <string name="pattern_5">Scacchiera</string>
+    <string name="shift_off">Disattivato</string>
+    <string name="shift_15s">15 secondi</string>
+    <string name="shift_30s">30 secondi</string>
+    <string name="shift_1m">1 minuto</string>
+    <string name="shift_2m">2 minuti</string>
+    <string name="shift_5m">5 minuti</string>
+    <string name="shift_10m">10 minuti</string>
+    <string name="desc">Spegne una percentuale di pixel in una griglia per ridurre burn-in e consumi sugli schermi OLED. Funziona tramite overlay (senza root). Con root può concedere automaticamente i permessi.</string>
+
+    <string name="toast_shizuku_cmd_failed">Comando Shizuku fallito o permesso non concesso</string>
+    <string name="toast_shizuku_denied">Permesso Shizuku negato</string>
+    <string name="toast_shizuku_unavailable">Shizuku non disponibile o non in esecuzione</string>
+    <string name="toast_shizuku_requested">Richiesta permesso Shizuku inviata…</string>
+    <string name="toast_root_granted">Permesso overlay concesso (root)</string>
+    <string name="toast_root_failed">Impossibile concedere con root. Verifica root/su o usa Shizuku/ADB.</string>
+    <string name="toast_shizuku_granted">Permesso overlay concesso (Shizuku)</string>
+    <string name="toast_permission_granted">Permesso concesso</string>
+    <string name="toast_root_unavailable">Root non disponibile o comando fallito</string>
+
+    <string name="status_overlay">Overlay</string>
+    <string name="status_root">Root</string>
+    <string name="status_shizuku">Shizuku</string>
+    <string name="status_native_rom">Nativo ROM</string>
+    <string name="status_active">Attivo</string>
+    <string name="status_ok">OK</string>
+    <string name="status_no">NO</string>
+    <string name="status_yes">sì</string>
+    <string name="status_no_short">no</string>
+    <string name="status_detected">rilevato</string>
+    <string name="status_checking">…</string>
+    <string name="status_permission_required">permesso richiesto</string>
+</resources>
