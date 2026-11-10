@@ -38,6 +38,15 @@ class SmartPixelView(context: Context) : View(context) {
     // Logical cell size in device pixels for the mask tile.
     private val cell = 1
 
+    // Rank table for 4x4 checkerboard: black cells get low ranks (0-7),
+    // white cells get high ranks (8-15) so intensity slider works linearly.
+    private val checkerboardRank = intArrayOf(
+        0, 8, 1, 9,
+        10, 2, 11, 3,
+        4, 12, 5, 13,
+        14, 6, 15, 7
+    )
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (!drawingEnabled) return
@@ -64,18 +73,21 @@ class SmartPixelView(context: Context) : View(context) {
         patternBitmap?.recycle()
 
         val period = when (pattern) {
-            0 -> 2
-            1 -> 3
-            2 -> 4
-            3 -> 6
-            4 -> 4
-            5 -> 2
+            0 -> 2 // 2x2 grid
+            1 -> 3 // 3x3 grid
+            2 -> 4 // 4x4 grid
+            3 -> 6 // 6x6 grid
+            4 -> 4 // diagonal
+            5 -> 4 // checkerboard 4x4 (linear intensity)
             else -> 4
         }
+        val total = period * period
+        val threshold = (intensity * total + 50) / 100
+
         val bmp = Bitmap.createBitmap(period * cell, period * cell, Bitmap.Config.ARGB_8888)
         for (r in 0 until period) {
             for (c in 0 until period) {
-                val on = shouldMask(c, r, intensity, pattern)
+                val on = shouldMask(c, r, pattern, total, threshold)
                 val color = if (on) Color.BLACK else Color.TRANSPARENT
                 for (dy in 0 until cell) {
                     val py = r * cell + dy
@@ -89,36 +101,27 @@ class SmartPixelView(context: Context) : View(context) {
         paint.shader = BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
     }
 
-    private fun shouldMask(c: Int, r: Int, pct: Int, pat: Int): Boolean {
-        if (pct >= 100) return true
+    private fun shouldMask(c: Int, r: Int, pat: Int, total: Int, threshold: Int): Boolean {
         val period = when (pat) {
             0 -> 2
             1 -> 3
             2 -> 4
             3 -> 6
             4 -> 4
-            5 -> 2
+            5 -> 4
             else -> 4
         }
         val cc = mod(c, period)
         val rr = mod(r, period)
-        val idx = when (pat) {
-            5 -> if ((cc + rr) % 2 == 0) 0 else 1
-            4 -> mod(cc + rr, period)
-            else -> rr * period + cc
-        }
-        val total = if (pat == 5) 2 else if (pat == 4) period else period * period
-        val threshold = (pct * total + 50) / 100
-        val rank = rankIndex(idx, total, pat)
-        return rank < threshold
-    }
+        val idx = rr * period + cc
 
-    private fun rankIndex(idx: Int, total: Int, pat: Int): Int {
-        return when (pat) {
-            5 -> idx
-            4 -> idx
-            else -> (idx * 7 + 3) % total
+        val rank = when (pat) {
+            5 -> checkerboardRank[rr * 4 + cc] // checkerboard with linear intensity
+            4 -> mod(cc + rr, period)          // diagonal
+            else -> (idx * 7 + 3) % total      // other grids with pseudo-random order
         }
+
+        return rank < threshold
     }
 
     private fun mod(a: Int, b: Int): Int {
