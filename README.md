@@ -1,72 +1,94 @@
-# Smart Pixel (Overlay App)
+# Smart Pixel (Overlay App for Android)
 
-An Android app that replicates the **Smart Pixel** feature found in many custom ROMs (e.g. LineageOS derivatives, crDroid, Project Infinity X). It applies a configurable grid overlay that turns off a percentage of pixels (renders them black) to help reduce OLED/AMOLED burn-in and slightly lower power usage.
+Smart Pixel is an Android overlay app that replicates the **Smart Pixel** feature found in many custom ROMs (such as LineageOS-based ROMs, crDroid, and Project Infinity X). It draws a configurable grid mask over the screen to turn off a percentage of pixels (rendered as black), helping reduce **OLED/AMOLED burn-in** and potentially lower power usage.
 
-> **Note:** This is a standalone overlay app, not a system/framework integration. It provides equivalent controls and behavior, but it is implemented using an Android overlay window rather than a ROM-level SystemUI/display filter.
+> **Disclaimer:** This project is **vibecoded** (AI-assisted/"vibe coded") and provided as-is. Review, test, and use at your own risk.
+
+## Why Smart Pixel?
+
+On OLED/AMOLED displays, black pixels are effectively turned off. A Smart Pixel-style grid can:
+- reduce uneven wear on static UI areas (burn-in mitigation),
+- slightly reduce power draw depending on intensity and content,
+- provide a configurable compromise between image quality and protection.
 
 ## Features
 
-- **Enable/disable Smart Pixel filter**
-- **Intensity**: percentage of pixels turned off (1–100%)
+- **Enable/disable** Smart Pixel filter
+- **Intensity** control (percentage of pixels turned off)
 - **Patterns**: 2x2, 3x3, 4x4, 6x6 grid, diagonal, checkerboard
-- **Pixel shift interval**: off, 15s, 30s, 1m, 2m, 5m, 10m (moves the mask to distribute wear)
+- **Pixel shift interval**: off, 15s, 30s, 1m, 2m, 5m, 10m
 - **Enable on battery saver** (optional)
 - **Quick Settings tile** for fast toggling
 - **Start on boot** (when enabled and overlay permission is granted)
-- **Optional root helper**: in-app button to grant overlay permission via `su`/`appops` (root required)
+- **Optional root helper** to grant overlay permission via `su`/`appops`
 
-## How it works
+## How It Works
 
-The app runs a foreground service and draws a full-screen, non-touchable overlay (`TYPE_APPLICATION_OVERLAY`) with a repeating black mask pattern. On OLED/AMOLED displays, black pixels are effectively off, which mimics the Smart Pixel concept.
+The app runs a foreground service and displays a full-screen, non-touchable overlay (`TYPE_APPLICATION_OVERLAY`) with a repeating mask pattern. Selected cells are drawn black; on OLED panels those pixels are effectively off.
+
+## Project Status & Disclaimer
+
+- **Vibecoded project**: generated and iterated with AI assistance.
+- **No warranty**: provided "AS IS" without warranty of any kind (see [LICENSE](LICENSE)).
+- **Not a ROM/system integration**: this is an app overlay, not a framework/SystemUI patch.
+- Test on your device/emulator before relying on it.
+
+## Limitations (vs ROM-integrated Smart Pixel)
+
+- Not integrated into system Settings/SystemUI (standalone app UI).
+- Uses an app overlay, not a native display pipeline/SystemUI filter layer.
+- May not appear over some protected/secure surfaces due to Android restrictions.
+- Root/Shizuku support is for convenience (e.g. granting permissions), not deep system integration.
 
 ## Requirements
 
 - Android 8.0+ (API 26+)
-- **"Display over other apps"** (overlay) permission
-- OLED/AMOLED screen recommended for real benefit (on LCD there is little/no power saving)
+- **Display over other apps** permission
+- OLED/AMOLED display recommended for real effect
 
-## Limitations vs ROM-integrated Smart Pixel
+## Install
 
-- Not integrated into system Settings/SystemUI (separate app UI and controls).
-- Implemented as an app overlay, not a native framework/display pipeline filter.
-- May not appear over some protected/system-secure surfaces due to Android restrictions.
-- Root/Shizuku support in this app is limited to convenience (e.g. granting overlay permission); it does not provide true system-level integration.
+### Option 1: Install APK
+1. Download the APK from [Releases](../../releases) or use `SmartPixel-debug.apk` from this repository.
+2. Install it on your device (enable install from unknown sources if needed).
+3. Open the app and grant overlay permission.
+4. Enable Smart Pixel and configure intensity/pattern/shift.
 
-## Build
-
-Project: Gradle (Kotlin), AGP 8.5.2, compile/target SDK 34, min SDK 26.
-
-### Prerequisites
-- JDK 17
-- Android SDK (platforms/build-tools for API 34)
-- `ANDROID_HOME`/`ANDROID_SDK_ROOT` set, or `local.properties` with `sdk.dir=...`
-
-### Build APK
+### Option 2: ADB
 ```bash
-# From smart-pixel-app/
-./gradlew assembleDebug
-# or, if you have Gradle installed:
-gradle assembleDebug
-```
-
-Output:
-- `app/build/outputs/apk/debug/app-debug.apk`
-
-## Install (ADB)
-
-```bash
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r SmartPixel-debug.apk
 # optional: grant overlay permission via ADB
 adb shell appops set com.zampediverse.smartpixel SYSTEM_ALERT_WINDOW allow
 ```
 
-After installation, open the app, grant overlay permission, configure intensity/pattern/shift, and enable the filter (or use the Quick Settings tile).
+## Build from Source
 
-## Notes
+### Prerequisites
+- JDK 17
+- Android SDK (API 34 platform/build-tools)
+- `ANDROID_HOME` / `ANDROID_SDK_ROOT` configured, or `local.properties` with `sdk.dir=...`
 
-- Higher intensity turns off more pixels and increases visible grain; choose a balance that is comfortable.
-- For burn-in prevention, combine with dark mode, moderate brightness, shorter screen timeout, and avoiding long-lived static UI elements.
+### Debug build
+```bash
+gradle assembleDebug
+# output: app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Release build
+```bash
+gradle assembleRelease
+# output: app/build/outputs/apk/release/app-release.apk (if signing configured)
+```
+
+## Repository Notes
+
+- `smart-pixel-app/` project root in this repository context contains source, Gradle config, and a prebuilt debug APK.
+- `local.properties` is machine-specific and should not be committed.
+
+## SEO / Keywords
+
+Android, Smart Pixel, SmartPixels, OLED, AMOLED, burn-in protection, screen burn-in, pixel shift, display overlay, no root, root optional, Quick Settings tile, battery saver, custom ROM feature port.
 
 ## License
 
-No license file is included by default. Add one before distributing if needed.
+Licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See [LICENSE](LICENSE) for details.
