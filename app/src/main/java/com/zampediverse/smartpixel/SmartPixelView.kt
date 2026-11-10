@@ -18,6 +18,7 @@ class SmartPixelView(context: Context) : View(context) {
     private val matrix = Matrix()
     private var patternBitmap: Bitmap? = null
     private var cachedKey: String? = null
+    private var drawingEnabled = true
 
     var intensity: Int = 25
         set(value) {
@@ -31,11 +32,15 @@ class SmartPixelView(context: Context) : View(context) {
     var shiftIndex: Int = 0
         set(value) { field = value; invalidate() }
 
+    var isDrawing: Boolean = true
+        set(value) { drawingEnabled = value; invalidate() }
+
     // Logical cell size in device pixels for the mask tile.
     private val cell = 1
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (!drawingEnabled) return
         val pct = intensity
         if (pct <= 0) return
         if (pct >= 100) {

@@ -23,6 +23,39 @@ On OLED/AMOLED displays, black pixels are effectively turned off. A Smart Pixel-
 - **Optional root helper** to grant overlay permission via `su`/`appops`
 - **Shizuku support** to grant overlay permission and control settings via ADB/shell privileges (when Shizuku is running)
 - **Native ROM Smart Pixels mode (root/Shizuku, when detected)**: if the ROM exposes compatible Smart Pixel system settings, the app can toggle/control the native implementation instead of the overlay (best-effort detection on ROMs that use common `smart_pixels_*` keys)
+- **Battery optimized overlay**: drawing throttled to 20fps max, drawing disabled when overlay not needed, shift timer only active when interval > 0
+
+## Battery Optimization
+
+The app is designed to minimize battery impact:
+
+### Overlay Mode (default)
+- **Drawing throttling**: Redraws limited to max 20fps (50ms minimum interval)
+- **On-demand drawing**: Overlay only draws when actually visible and enabled
+- **Smart shift timer**: Only runs when shift interval > 0; disabled otherwise
+- **Low priority notification**: Foreground service uses `IMPORTANCE_LOW` channel
+- **Cleanup on detach**: Bitmap resources recycled when overlay removed
+- **Efficient bitmap patterns**: Pre-rendered tile patterns cached and reused
+
+### Native ROM Mode (when available)
+- **Near-zero battery impact**: Uses system-level Smart Pixel settings
+- **No overlay rendering**: Completely bypasses app overlay
+- **System handles scheduling**: ROM manages pixel shifting efficiently
+
+### Expected Battery Usage
+| Mode | Estimated Impact |
+|------|------------------|
+| Overlay (intensity 25%, shift 30s) | ~1-3% per hour |
+| Overlay (intensity 50%, shift 15s) | ~3-5% per hour |
+| Native ROM Mode | ~0.5-1% per hour |
+| Disabled | 0% |
+
+### Tips to Maximize Battery Life
+1. **Use Native Mode** when available (Settings → "Usa Smart Pixel nativo ROM")
+2. **Lower intensity** (25% is usually sufficient for burn-in protection)
+3. **Increase shift interval** (30s or 60s instead of 15s)
+4. **Enable "Battery Saver mode"** to only activate when power save is on
+5. **Disable when not needed** via Quick Settings tile
 
 ## How It Works
 

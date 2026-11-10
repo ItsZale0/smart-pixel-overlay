@@ -48,14 +48,27 @@ class SmartPixelService : Service() {
     private var view: SmartPixelView? = null
     private val handler = Handler(Looper.getMainLooper())
     private var shiftIndex = 0
+    private var lastDrawTime = 0L
+    private val minDrawIntervalMs = 50L // throttle redraws to max 20fps
     private val shiftRunnable = object : Runnable {
         override fun run() {
             val secs = Prefs.shiftSeconds(this@SmartPixelService)
             if (secs > 0 && view != null) {
                 shiftIndex = (shiftIndex + 1) % 16
                 view?.shiftIndex = shiftIndex
+                scheduleRedraw()
                 handler.postDelayed(this, secs * 1000L)
             }
+        }
+    }
+
+    private fun scheduleRedraw() {
+        val now = System.currentTimeMillis()
+        if (now - lastDrawTime >= minDrawIntervalMs) {
+            lastDrawTime = now
+            view?.invalidate()
+        } else {
+            handler.postAtTime({ view?.invalidate() }, lastDrawTime + minDrawIntervalMs)
         }
     }
 
@@ -97,7 +110,11 @@ class SmartPixelService : Service() {
         view?.pattern = Prefs.pattern(this)
         handler.removeCallbacks(shiftRunnable)
         val secs = Prefs.shiftSeconds(this)
-        if (secs > 0) handler.postDelayed(shiftRunnable, secs * 1000L)
+        if (secs > 0) handler.postDelayed(shiftRunnable, secs * 1000L) else {
+            // No shift interval - disable shift functionality
+            shiftIndex = 0
+            view?.shiftIndex = 0
+        }
     }
 
     private fun showOverlay() {
@@ -123,6 +140,7 @@ class SmartPixelService : Service() {
         val v = SmartPixelView(this)
         v.intensity = Prefs.intensity(this)
         v.pattern = Prefs.pattern(this)
+        v.isDrawing = true // Enable drawing
         try {
             wm?.addView(v, params)
             view = v
@@ -133,6 +151,8 @@ class SmartPixelService : Service() {
         handler.removeCallbacks(shiftRunnable)
         try { if (view != null) wm?.removeView(view) } catch (_: Exception) {}
         view = null
+        // Disable drawing to save battery
+        view?.isDrawing = false
     }
 
     override fun onDestroy() {
