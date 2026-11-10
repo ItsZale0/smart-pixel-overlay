@@ -46,7 +46,9 @@ class SmartPixelTileService : TileService() {
         val enabled = Prefs.isEnabled(applicationContext)
         tile.state = if (enabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         tile.label = getString(R.string.tile_label)
-        tile.subtitle = if (enabled) "${Prefs.intensity(applicationContext)}%" else null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            tile.subtitle = if (enabled) "${Prefs.intensity(applicationContext)}%" else null
+        }
         tile.updateTile()
     }
 }

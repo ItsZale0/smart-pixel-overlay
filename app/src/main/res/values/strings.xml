@@ -10,7 +10,8 @@
     <string name="overlay_permission_msg">Concedi il permesso "Mostra sopra altre app" per applicare il filtro Smart Pixel.</string>
     <string name="grant">Concedi</string>
     <string name="cancel">Annulla</string>
-    <string name="root_grant">Concedi con root/Shizuku</string>
+    <string name="root_grant">Concedi con root</string>
+    <string name="shizuku_grant">Concedi con Shizuku</string>
     <string name="service_running">Filtro Smart Pixel attivo</string>
     <string name="service_channel">Smart Pixel</string>
     <string name="pattern_0">Griglia 2x2</string>

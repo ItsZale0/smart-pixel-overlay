@@ -1,8 +1,8 @@
 package com.zampediverse.smartpixel
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
@@ -14,15 +14,51 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.zampediverse.smartpixel.databinding.ActivityMainBinding
+import rikka.shizuku.Shizuku
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private lateinit var b: ActivityMainBinding
     private val shiftValues = intArrayOf(0, 15, 30, 60, 120, 300, 600)
+    @Volatile private var cachedHasSu: Boolean? = null
+    @Volatile private var suCheckInFlight = false
+    @Volatile private var cachedShizuku: String? = null // "available+granted", "available", "no"
+    @Volatile private var pendingShizukuGrant = false
+
+    private val shizukuPermissionListener =
+        Shizuku.OnRequestPermissionResultListener { _, grantResult ->
+            runOnUiThread {
+                cachedShizuku = if (grantResult == PackageManager.PERMISSION_GRANTED) "available+granted" else "available"
+                if (grantResult == PackageManager.PERMISSION_GRANTED && pendingShizukuGrant) {
+                    pendingShizukuGrant = false
+                    runShizukuGrant { ok ->
+                        if (ok) maybeApply() else Toast.makeText(this, "Comando Shizuku fallito o permesso non concesso", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    pendingShizukuGrant = false
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "Permesso Shizuku negato", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                updateStatus()
+            }
+        }
+
+    private val shizukuBinderReceivedListener = Shizuku.OnBinderReceivedListener {
+        runOnUiThread { cachedShizuku = null; updateStatus() }
+    }
+    private val shizukuBinderDeadListener = Shizuku.OnBinderDeadListener {
+        runOnUiThread { cachedShizuku = "no"; updateStatus() }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
+
+        Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
+        try { Shizuku.addBinderReceivedListenerSticky(shizukuBinderReceivedListener) } catch (_: Throwable) {}
+        try { Shizuku.addBinderDeadListener(shizukuBinderDeadListener) } catch (_: Throwable) {}
 
         setupSpinners()
         loadState()
@@ -36,7 +72,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadState()
+        cachedShizuku = null
         updateStatus()
+    }
+
+    override fun onDestroy() {
+        try { Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener) } catch (_: Throwable) {}
+        try { Shizuku.removeBinderReceivedListener(shizukuBinderReceivedListener) } catch (_: Throwable) {}
+        try { Shizuku.removeBinderDeadListener(shizukuBinderDeadListener) } catch (_: Throwable) {}
+        super.onDestroy()
     }
 
     private fun setupSpinners() {
@@ -116,14 +160,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         b.btnRootGrant.setOnClickListener {
-            val ok = RootUtils.grantOverlayPermission(packageName)
-            if (ok) {
-                Toast.makeText(this, "Permesso overlay concesso (root)", Toast.LENGTH_SHORT).show()
-                maybeApply()
-            } else {
-                Toast.makeText(this, "Impossibile concedere con root. Verifica root/su o usa Shizuku/ADB.", Toast.LENGTH_LONG).show()
+            b.btnRootGrant.isEnabled = false
+            thread {
+                val ok = RootUtils.grantOverlayPermission(packageName)
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        b.btnRootGrant.isEnabled = true
+                        if (ok) {
+                            cachedHasSu = true
+                            Toast.makeText(this, "Permesso overlay concesso (root)", Toast.LENGTH_SHORT).show()
+                            maybeApply()
+                        } else {
+                            Toast.makeText(this, "Impossibile concedere con root. Verifica root/su o usa Shizuku/ADB.", Toast.LENGTH_LONG).show()
+                        }
+                        updateStatus()
+                    }
+                }
             }
-            updateStatus()
+        }
+
+        b.btnShizukuGrant.setOnClickListener {
+            if (!ShizukuUtils.isAvailable()) {
+                Toast.makeText(this, "Shizuku non disponibile o non in esecuzione", Toast.LENGTH_LONG).show()
+                updateStatus()
+                return@setOnClickListener
+            }
+            if (ShizukuUtils.hasPermission()) {
+                runShizukuGrant { ok ->
+                    if (ok) maybeApply() else Toast.makeText(this, "Comando Shizuku fallito", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                pendingShizukuGrant = true
+                ShizukuUtils.requestPermission()
+                Toast.makeText(this, "Richiesta permesso Shizuku inviata...", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -146,11 +216,20 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             .setNeutralButton(R.string.root_grant) { _, _ ->
-                if (RootUtils.grantOverlayPermission(packageName)) {
-                    Toast.makeText(this, "Permesso concesso", Toast.LENGTH_SHORT).show()
-                    onGranted()
-                } else {
-                    Toast.makeText(this, "Root non disponibile o comando fallito", Toast.LENGTH_LONG).show()
+                thread {
+                    val ok = RootUtils.grantOverlayPermission(packageName)
+                    runOnUiThread {
+                        if (!isFinishing && !isDestroyed) {
+                            if (ok) {
+                                cachedHasSu = true
+                                Toast.makeText(this, "Permesso concesso", Toast.LENGTH_SHORT).show()
+                                onGranted()
+                            } else {
+                                Toast.makeText(this, "Root non disponibile o comando fallito", Toast.LENGTH_LONG).show()
+                            }
+                            updateStatus()
+                        }
+                    }
                 }
             }
             .setNegativeButton(R.string.cancel, null)
@@ -175,10 +254,57 @@ class MainActivity : AppCompatActivity() {
         updateStatus()
     }
 
+    private fun getShizukuStatus(): String {
+        val c = cachedShizuku
+        if (c != null) return c
+        val s = when {
+            !ShizukuUtils.isAvailable() -> "no"
+            ShizukuUtils.hasPermission() -> "ok"
+            else -> "permesso richiesto"
+        }
+        cachedShizuku = s
+        return s
+    }
+
+    private fun runShizukuGrant(onDone: (Boolean) -> Unit) {
+        b.btnShizukuGrant.isEnabled = false
+        thread {
+            val ok = ShizukuUtils.grantOverlayPermission(packageName)
+            runOnUiThread {
+                if (!isFinishing && !isDestroyed) {
+                    b.btnShizukuGrant.isEnabled = true
+                    if (ok) {
+                        cachedShizuku = "ok"
+                        Toast.makeText(this, "Permesso overlay concesso (Shizuku)", Toast.LENGTH_SHORT).show()
+                    }
+                    updateStatus()
+                    onDone(ok)
+                }
+            }
+        }
+    }
+
     private fun updateStatus() {
         val overlay = Settings.canDrawOverlays(this)
-        val root = RootUtils.hasSu()
         val eff = effectiveEnabled()
-        b.textStatus.text = "Overlay: ${if (overlay) "OK" else "NO"} | Root: ${if (root) "rilevato" else "no"} | Attivo: ${if (eff) "sì" else "no"}"
+        val rootCached = cachedHasSu
+        val shizuku = getShizukuStatus()
+        b.textStatus.text = "Overlay: ${if (overlay) "OK" else "NO"} | Root: ${when (rootCached) { true -> "rilevato"; false -> "no"; null -> "..." }} | Shizuku: $shizuku | Attivo: ${if (eff) "sì" else "no"}"
+        if (rootCached == null && !suCheckInFlight) {
+            suCheckInFlight = true
+            thread {
+                val root = RootUtils.hasSu()
+                runOnUiThread {
+                    suCheckInFlight = false
+                    if (!isFinishing && !isDestroyed) {
+                        cachedHasSu = root
+                        val ov = Settings.canDrawOverlays(this)
+                        val e = effectiveEnabled()
+                        val sh = getShizukuStatus()
+                        b.textStatus.text = "Overlay: ${if (ov) "OK" else "NO"} | Root: ${if (root) "rilevato" else "no"} | Shizuku: $sh | Attivo: ${if (e) "sì" else "no"}"
+                    }
+                }
+            }
+        }
     }
 }

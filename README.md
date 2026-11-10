@@ -21,6 +21,7 @@ On OLED/AMOLED displays, black pixels are effectively turned off. A Smart Pixel-
 - **Quick Settings tile** for fast toggling
 - **Start on boot** (when enabled and overlay permission is granted)
 - **Optional root helper** to grant overlay permission via `su`/`appops`
+- **Shizuku support** to grant overlay permission via ADB/shell privileges (when Shizuku is running)
 
 ## How It Works
 
@@ -38,7 +39,8 @@ The app runs a foreground service and displays a full-screen, non-touchable over
 - Not integrated into system Settings/SystemUI (standalone app UI).
 - Uses an app overlay, not a native display pipeline/SystemUI filter layer.
 - May not appear over some protected/secure surfaces due to Android restrictions.
-- Root/Shizuku support is for convenience (e.g. granting permissions), not deep system integration.
+- Some Android/ROM configurations may restrict overlay opacity for non-touchable system alert windows, which can reduce the "black pixel" effect compared to ROM-integrated implementations.
+- Root/Shizuku support is for convenience (e.g. granting permissions/automation), not deep system integration. Shizuku cannot bypass WindowManager/compositor limitations or make this a true ROM-level Smart Pixel.
 
 ## Requirements
 
