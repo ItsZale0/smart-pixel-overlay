@@ -21,7 +21,8 @@ On OLED/AMOLED displays, black pixels are effectively turned off. A Smart Pixel-
 - **Quick Settings tile** for fast toggling
 - **Start on boot** (when enabled and overlay permission is granted)
 - **Optional root helper** to grant overlay permission via `su`/`appops`
-- **Shizuku support** to grant overlay permission via ADB/shell privileges (when Shizuku is running)
+- **Shizuku support** to grant overlay permission and control settings via ADB/shell privileges (when Shizuku is running)
+- **Native ROM Smart Pixels mode (root/Shizuku, when detected)**: if the ROM exposes compatible Smart Pixel system settings, the app can toggle/control the native implementation instead of the overlay (best-effort detection on ROMs that use common `smart_pixels_*` keys)
 
 ## How It Works
 

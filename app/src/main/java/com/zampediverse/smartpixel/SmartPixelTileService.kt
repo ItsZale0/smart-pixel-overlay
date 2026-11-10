@@ -15,8 +15,11 @@ class SmartPixelTileService : TileService() {
     override fun onClick() {
         super.onClick()
         val ctx = applicationContext
+        val nativeKeys = NativeSmartPixel.detect(ctx)
+        val useNative = Prefs.nativeMode(ctx) && nativeKeys != null
+
         if (!Prefs.isEnabled(ctx)) {
-            if (!Settings.canDrawOverlays(ctx)) {
+            if (!useNative && !Settings.canDrawOverlays(ctx)) {
                 val i = Intent(ctx, MainActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     putExtra("request_overlay", true)
@@ -33,9 +36,24 @@ class SmartPixelTileService : TileService() {
                 return
             }
             Prefs.setEnabled(ctx, true)
-            SmartPixelService.start(ctx)
+            if (useNative && nativeKeys != null) {
+                SmartPixelService.stop(ctx)
+                Thread {
+                    NativeSmartPixel.setEnabled(ctx, nativeKeys, true, useRoot = true, useShizuku = true)
+                    NativeSmartPixel.setPowerSave(ctx, nativeKeys, Prefs.batterySaver(ctx), true, true)
+                    NativeSmartPixel.setPattern(ctx, nativeKeys, Prefs.pattern(ctx), true, true)
+                    NativeSmartPixel.setShift(ctx, nativeKeys, Prefs.shiftSeconds(ctx), true, true)
+                }.start()
+            } else {
+                SmartPixelService.start(ctx)
+            }
         } else {
             Prefs.setEnabled(ctx, false)
+            if (useNative && nativeKeys != null) {
+                Thread {
+                    NativeSmartPixel.setEnabled(ctx, nativeKeys, false, useRoot = true, useShizuku = true)
+                }.start()
+            }
             SmartPixelService.stop(ctx)
         }
         refresh()

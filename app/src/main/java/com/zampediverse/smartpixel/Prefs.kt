@@ -10,6 +10,7 @@ object Prefs {
     const val KEY_INTENSITY = "intensity" // 0..100 percent off
     const val KEY_PATTERN = "pattern" // index
     const val KEY_SHIFT = "shift" // seconds, 0 = off
+    const val KEY_NATIVE_MODE = "native_mode"
 
     fun sp(context: Context): SharedPreferences =
         context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
@@ -28,4 +29,7 @@ object Prefs {
 
     fun shiftSeconds(context: Context) = sp(context).getInt(KEY_SHIFT, 0)
     fun setShiftSeconds(context: Context, v: Int) = sp(context).edit().putInt(KEY_SHIFT, v).apply()
+
+    fun nativeMode(context: Context) = sp(context).getBoolean(KEY_NATIVE_MODE, false)
+    fun setNativeMode(context: Context, v: Boolean) = sp(context).edit().putBoolean(KEY_NATIVE_MODE, v).apply()
 }

@@ -109,6 +109,9 @@ class MainActivity : AppCompatActivity() {
     private fun loadState() {
         b.switchEnable.isChecked = Prefs.isEnabled(this)
         b.switchBatterySaver.isChecked = Prefs.batterySaver(this)
+        b.switchNativeMode.isChecked = Prefs.nativeMode(this)
+        val native = NativeSmartPixel.detect(this)
+        b.switchNativeMode.isEnabled = native != null
         val intensity = Prefs.intensity(this)
         b.seekIntensity.progress = intensity
         b.textIntensity.text = "$intensity%"
@@ -121,11 +124,16 @@ class MainActivity : AppCompatActivity() {
     private fun bindListeners() {
         b.switchEnable.setOnCheckedChangeListener { _, checked ->
             if (checked) {
-                ensureOverlayPermission {
+                if (Prefs.nativeMode(this) && NativeSmartPixel.detect(this) != null) {
                     Prefs.setEnabled(this, true)
                     maybeApply()
+                } else {
+                    ensureOverlayPermission {
+                        Prefs.setEnabled(this, true)
+                        maybeApply()
+                    }
+                    if (!Prefs.nativeMode(this) && !Settings.canDrawOverlays(this)) b.switchEnable.isChecked = false
                 }
-                if (!Settings.canDrawOverlays(this)) b.switchEnable.isChecked = false
             } else {
                 Prefs.setEnabled(this, false)
                 maybeApply()
@@ -134,6 +142,11 @@ class MainActivity : AppCompatActivity() {
 
         b.switchBatterySaver.setOnCheckedChangeListener { _, checked ->
             Prefs.setBatterySaver(this, checked)
+            maybeApply()
+        }
+
+        b.switchNativeMode.setOnCheckedChangeListener { _, checked ->
+            Prefs.setNativeMode(this, checked)
             maybeApply()
         }
 
@@ -246,10 +259,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun maybeApply() {
-        if (effectiveEnabled() && Settings.canDrawOverlays(this)) {
-            SmartPixelService.start(this)
-        } else if (!effectiveEnabled()) {
+        val nativeKeys = NativeSmartPixel.detect(this)
+        val useNative = Prefs.nativeMode(this) && nativeKeys != null
+        val enabled = effectiveEnabled()
+
+        if (useNative && nativeKeys != null) {
             SmartPixelService.stop(this)
+            thread {
+                val ok = NativeSmartPixel.setEnabled(this, nativeKeys, enabled, useRoot = true, useShizuku = true)
+                if (ok) {
+                    NativeSmartPixel.setPowerSave(this, nativeKeys, Prefs.batterySaver(this), true, true)
+                    NativeSmartPixel.setPattern(this, nativeKeys, Prefs.pattern(this), true, true)
+                    NativeSmartPixel.setShift(this, nativeKeys, Prefs.shiftSeconds(this), true, true)
+                }
+                runOnUiThread { updateStatus() }
+            }
+        } else {
+            if (enabled && Settings.canDrawOverlays(this)) {
+                SmartPixelService.start(this)
+            } else if (!enabled) {
+                SmartPixelService.stop(this)
+            }
         }
         updateStatus()
     }
@@ -289,7 +319,9 @@ class MainActivity : AppCompatActivity() {
         val eff = effectiveEnabled()
         val rootCached = cachedHasSu
         val shizuku = getShizukuStatus()
-        b.textStatus.text = "Overlay: ${if (overlay) "OK" else "NO"} | Root: ${when (rootCached) { true -> "rilevato"; false -> "no"; null -> "..." }} | Shizuku: $shizuku | Attivo: ${if (eff) "sì" else "no"}"
+        val native = NativeSmartPixel.detect(this)
+        val nativeStr = if (native != null) "sì (${native.enableKey})" else "no"
+        b.textStatus.text = "Overlay: ${if (overlay) "OK" else "NO"} | Root: ${when (rootCached) { true -> "rilevato"; false -> "no"; null -> "..." }} | Shizuku: $shizuku | Nativo ROM: $nativeStr | Attivo: ${if (eff) "sì" else "no"}"
         if (rootCached == null && !suCheckInFlight) {
             suCheckInFlight = true
             thread {
@@ -301,7 +333,9 @@ class MainActivity : AppCompatActivity() {
                         val ov = Settings.canDrawOverlays(this)
                         val e = effectiveEnabled()
                         val sh = getShizukuStatus()
-                        b.textStatus.text = "Overlay: ${if (ov) "OK" else "NO"} | Root: ${if (root) "rilevato" else "no"} | Shizuku: $sh | Attivo: ${if (e) "sì" else "no"}"
+                        val n = NativeSmartPixel.detect(this)
+                        val ns = if (n != null) "sì (${n.enableKey})" else "no"
+                        b.textStatus.text = "Overlay: ${if (ov) "OK" else "NO"} | Root: ${if (root) "rilevato" else "no"} | Shizuku: $sh | Nativo ROM: $ns | Attivo: ${if (e) "sì" else "no"}"
                     }
                 }
             }
