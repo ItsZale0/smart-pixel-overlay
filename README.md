@@ -24,6 +24,7 @@ On OLED/AMOLED displays, black pixels are effectively turned off. A Smart Pixel-
 - **Shizuku support** to grant overlay permission and control settings via ADB/shell privileges (when Shizuku is running)
 - **Native ROM Smart Pixels mode (root/Shizuku, when detected)**: if the ROM exposes compatible Smart Pixel system settings, the app can toggle/control the native implementation instead of the overlay (best-effort detection on ROMs that use common `smart_pixels_*` keys)
 - **Battery optimized overlay**: drawing throttled to 20fps max, drawing disabled when overlay not needed, shift timer only active when interval > 0
+- **Localization**: English by default, follows system language (Italian translation included)
 
 ## Battery Optimization
 
