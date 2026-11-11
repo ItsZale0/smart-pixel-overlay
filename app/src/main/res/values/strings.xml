@@ -5,6 +5,7 @@
     <string name="enable_on_battery_saver">Enable on battery saver</string>
     <string name="pattern">Pattern (grid)</string>
     <string name="intensity">Pixels turned off (%)</string>
+    <string name="black_level">Black opacity (%) (100 = total black)</string>
     <string name="shift_timeout">Shift interval</string>
     <string name="overlay_permission_title">Overlay permission required</string>
     <string name="overlay_permission_msg">Grant "Show over other apps" permission to apply the Smart Pixel filter.</string>

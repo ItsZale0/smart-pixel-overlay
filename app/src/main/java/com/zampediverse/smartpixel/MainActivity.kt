@@ -115,6 +115,9 @@ class MainActivity : AppCompatActivity() {
         val intensity = Prefs.intensity(this)
         b.seekIntensity.progress = intensity
         b.textIntensity.text = "$intensity%"
+        val blackLevel = Prefs.blackLevel(this)
+        b.seekBlackLevel.progress = blackLevel
+        b.textBlackLevel.text = "$blackLevel%"
         b.spinnerPattern.setSelection(Prefs.pattern(this).coerceIn(0, 5))
         val shiftSec = Prefs.shiftSeconds(this)
         val shiftIdx = shiftValues.indexOf(shiftSec).let { if (it >= 0) it else 0 }
@@ -156,6 +159,19 @@ class MainActivity : AppCompatActivity() {
                 b.textIntensity.text = "$p%"
                 if (fromUser) {
                     Prefs.setIntensity(this@MainActivity, p)
+                    SmartPixelService.update(this@MainActivity)
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        b.seekBlackLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val p = progress.coerceIn(0, 100)
+                b.textBlackLevel.text = "$p%"
+                if (fromUser) {
+                    Prefs.setBlackLevel(this@MainActivity, p)
                     SmartPixelService.update(this@MainActivity)
                 }
             }

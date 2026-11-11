@@ -5,6 +5,7 @@
     <string name="enable_on_battery_saver">Attiva con risparmio energetico</string>
     <string name="pattern">Pattern (griglia)</string>
     <string name="intensity">Pixel spenti (%)</string>
+    <string name="black_level">Opacità nero (%) (100 = nero totale)</string>
     <string name="shift_timeout">Intervallo spostamento</string>
     <string name="overlay_permission_title">Permesso overlay richiesto</string>
     <string name="overlay_permission_msg">Concedi il permesso "Mostra sopra altre app" per applicare il filtro Smart Pixel.</string>
