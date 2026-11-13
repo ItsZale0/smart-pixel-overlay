@@ -11,6 +11,7 @@ object Prefs {
     const val KEY_PATTERN = "pattern" // index
     const val KEY_SHIFT = "shift" // seconds, 0 = off
     const val KEY_NATIVE_MODE = "native_mode"
+    const val KEY_SPACING = "spacing" // 0 = custom (use %/pattern), >=2 = 1 pixel off every N (NxN grid)
 
     fun sp(context: Context): SharedPreferences =
         context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
@@ -23,6 +24,9 @@ object Prefs {
 
     fun intensity(context: Context) = sp(context).getInt(KEY_INTENSITY, 25).coerceIn(0, 100)
     fun setIntensity(context: Context, v: Int) = sp(context).edit().putInt(KEY_INTENSITY, v.coerceIn(0, 100)).apply()
+
+    fun spacing(context: Context) = sp(context).getInt(KEY_SPACING, 0).coerceIn(0, 16)
+    fun setSpacing(context: Context, v: Int) = sp(context).edit().putInt(KEY_SPACING, v.coerceIn(0, 16)).apply()
 
     fun pattern(context: Context) = sp(context).getInt(KEY_PATTERN, 0)
     fun setPattern(context: Context, v: Int) = sp(context).edit().putInt(KEY_PATTERN, v).apply()

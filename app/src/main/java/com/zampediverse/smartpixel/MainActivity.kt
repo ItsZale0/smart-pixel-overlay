@@ -20,6 +20,7 @@ import kotlin.concurrent.thread
 class MainActivity : AppCompatActivity() {
     private lateinit var b: ActivityMainBinding
     private val shiftValues = intArrayOf(0, 15, 30, 60, 120, 300, 600)
+    private val spacingValues = intArrayOf(0, 2, 3, 4, 5, 6, 8, 10) // 0 = custom (%)
     @Volatile private var cachedHasSu: Boolean? = null
     @Volatile private var suCheckInFlight = false
     @Volatile private var cachedShizuku: String? = null // "available+granted", "available", "no"
@@ -99,6 +100,18 @@ class MainActivity : AppCompatActivity() {
         )
         b.spinnerPattern.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, patterns)
 
+        val spacings = listOf(
+            getString(R.string.spacing_custom),
+            getString(R.string.spacing_every_n, 2),
+            getString(R.string.spacing_every_n, 3),
+            getString(R.string.spacing_every_n, 4),
+            getString(R.string.spacing_every_n, 5),
+            getString(R.string.spacing_every_n, 6),
+            getString(R.string.spacing_every_n, 8),
+            getString(R.string.spacing_every_n, 10)
+        )
+        b.spinnerSpacing.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, spacings)
+
         val shifts = listOf(
             getString(R.string.shift_off),
             getString(R.string.shift_15s),
@@ -117,6 +130,12 @@ class MainActivity : AppCompatActivity() {
         b.switchNativeMode.isChecked = Prefs.nativeMode(this)
         val native = NativeSmartPixel.detect(this)
         b.switchNativeMode.isEnabled = native != null
+        val spacing = Prefs.spacing(this)
+        val spacingIdx = spacingValues.indexOf(spacing).let { if (it >= 0) it else 0 }
+        b.spinnerSpacing.setSelection(spacingIdx)
+        val customSpacing = spacing == 0
+        b.spinnerPattern.isEnabled = customSpacing
+        b.seekIntensity.isEnabled = customSpacing
         val intensity = Prefs.intensity(this)
         b.seekIntensity.progress = intensity
         b.textIntensity.text = "$intensity%"
@@ -168,6 +187,14 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
+        b.spinnerSpacing.onItemSelectedListener = simpleSelect { pos ->
+            val sp = spacingValues.getOrElse(pos) { 0 }
+            Prefs.setSpacing(this, sp)
+            val custom = sp == 0
+            b.spinnerPattern.isEnabled = custom
+            b.seekIntensity.isEnabled = custom
+            SmartPixelService.update(this)
+        }
         b.spinnerPattern.onItemSelectedListener = simpleSelect { pos ->
             Prefs.setPattern(this, pos)
             SmartPixelService.update(this)

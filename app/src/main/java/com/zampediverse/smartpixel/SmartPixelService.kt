@@ -136,6 +136,7 @@ class SmartPixelService : Service() {
             gravity = Gravity.TOP or Gravity.START
             alpha = 1.0f
             dimAmount = 0f
+            screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
@@ -143,8 +144,10 @@ class SmartPixelService : Service() {
         val v = SmartPixelView(this)
         v.intensity = Prefs.intensity(this)
         v.pattern = Prefs.pattern(this)
+        v.spacing = Prefs.spacing(this)
         v.isDrawing = true // Enable drawing
         try {
+            v.setBackgroundColor(android.graphics.Color.TRANSPARENT)
             v.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             wm?.addView(v, params)
             view = v

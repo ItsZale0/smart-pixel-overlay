@@ -47,6 +47,19 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/spacing"
+            android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
+
+        <Spinner
+            android:id="@+id/spinnerSpacing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="@string/intensity"
             android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />

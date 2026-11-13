@@ -5,6 +5,9 @@
     <string name="enable_on_battery_saver">Attiva con risparmio energetico</string>
     <string name="pattern">Pattern (griglia)</string>
     <string name="intensity">Pixel spenti (%)</string>
+    <string name="spacing">Intervallo pixel spenti (1 ogni N)</string>
+    <string name="spacing_custom">Personalizzato (usa %)</string>
+    <string name="spacing_every_n">1 ogni %1$d</string>
     <string name="shift_timeout">Intervallo spostamento</string>
     <string name="overlay_permission_title">Permesso overlay richiesto</string>
     <string name="overlay_permission_msg">Concedi il permesso "Mostra sopra altre app" per applicare il filtro Smart Pixel.</string>
@@ -38,7 +41,7 @@
     <string name="shift_2m">2 minuti</string>
     <string name="shift_5m">5 minuti</string>
     <string name="shift_10m">10 minuti</string>
-    <string name="desc">Spegne una percentuale di pixel in una griglia per ridurre burn-in e consumi sugli schermi OLED. Funziona tramite overlay (senza root). Con root può concedere automaticamente i permessi.</string>
+    <string name="desc">Spegne pixel in una griglia/pattern (per percentuale o intervallo/spaziatura 1 ogni N) per ridurre burn-in e consumi sugli schermi OLED. Funziona tramite overlay (senza root). Con root/Shizuku può concedere automaticamente i permessi o usare la modalità nativa ROM se disponibile.</string>
 
     <string name="toast_shizuku_cmd_failed">Comando Shizuku fallito o permesso non concesso</string>
     <string name="toast_shizuku_denied">Permesso Shizuku negato</string>

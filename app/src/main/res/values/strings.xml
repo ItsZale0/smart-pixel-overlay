@@ -5,6 +5,9 @@
     <string name="enable_on_battery_saver">Enable on battery saver</string>
     <string name="pattern">Pattern (grid)</string>
     <string name="intensity">Pixels turned off (%)</string>
+    <string name="spacing">Pixel spacing (1 off every N)</string>
+    <string name="spacing_custom">Custom (use %)</string>
+    <string name="spacing_every_n">1 every %1$d</string>
     <string name="shift_timeout">Shift interval</string>
     <string name="overlay_permission_title">Overlay permission required</string>
     <string name="overlay_permission_msg">Grant "Show over other apps" permission to apply the Smart Pixel filter.</string>
@@ -38,7 +41,7 @@
     <string name="shift_2m">2 minutes</string>
     <string name="shift_5m">5 minutes</string>
     <string name="shift_10m">10 minutes</string>
-    <string name="desc">Turns off a percentage of pixels in a grid to reduce burn-in and power consumption on OLED screens. Works via overlay (no-root). With root can automatically grant permissions.</string>
+    <string name="desc">Turns off pixels in a grid/pattern (by percentage or spacing interval 1-every-N) to reduce burn-in and power consumption on OLED screens. Works via overlay (no-root). With root/Shizuku can automatically grant permissions or use native ROM mode when available.</string>
 
     <string name="toast_shizuku_cmd_failed">Shizuku command failed or permission not granted</string>
     <string name="toast_shizuku_denied">Shizuku permission denied</string>

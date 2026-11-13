@@ -29,6 +29,11 @@ class SmartPixelView(context: Context) : View(context) {
         set(value) {
             if (field != value) { field = value; cachedKey = null; invalidate() }
         }
+    var spacing: Int = 0 // 0 = custom (%/pattern), >=2 = 1 pixel off every N (NxN)
+        set(value) {
+            val v = value.coerceIn(0, 16)
+            if (field != v) { field = v; cachedKey = null; invalidate() }
+        }
     var shiftIndex: Int = 0
         set(value) { field = value; invalidate() }
 
@@ -50,6 +55,17 @@ class SmartPixelView(context: Context) : View(context) {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (!drawingEnabled) return
+        if (spacing >= 2) {
+            ensurePattern()
+            if (patternBitmap == null) return
+            val ox = (mod(shiftIndex, 4) - 1) * cell.toFloat()
+            val oy = (mod(shiftIndex / 4, 4) - 1) * cell.toFloat()
+            matrix.reset()
+            matrix.setTranslate(ox, oy)
+            (paint.shader as? BitmapShader)?.setLocalMatrix(matrix)
+            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+            return
+        }
         val pct = intensity
         if (pct <= 0) return
         if (pct >= 100) {
@@ -67,10 +83,30 @@ class SmartPixelView(context: Context) : View(context) {
     }
 
     private fun ensurePattern() {
-        val key = "$pattern:$intensity:$cell"
+        val key = "$pattern:$intensity:$spacing:$cell"
         if (key == cachedKey && patternBitmap != null) return
         cachedKey = key
         patternBitmap?.recycle()
+
+        if (spacing >= 2) {
+            val period = spacing
+            val bmp = Bitmap.createBitmap(period * cell, period * cell, Bitmap.Config.ARGB_8888)
+            for (r in 0 until period) {
+                for (c in 0 until period) {
+                    val on = (c == 0 && r == 0) // 1 pixel spento ogni N (NxN)
+                    val color = if (on) Color.BLACK else Color.TRANSPARENT
+                    for (dy in 0 until cell) {
+                        val py = r * cell + dy
+                        for (dx in 0 until cell) {
+                            bmp.setPixel(c * cell + dx, py, color)
+                        }
+                    }
+                }
+            }
+            patternBitmap = bmp
+            paint.shader = BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+            return
+        }
 
         val period = when (pattern) {
             0 -> 2 // 2x2 grid

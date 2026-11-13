@@ -65,7 +65,10 @@ class SmartPixelTileService : TileService() {
         tile.state = if (enabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
         tile.label = getString(R.string.tile_label)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.subtitle = if (enabled) "${Prefs.intensity(applicationContext)}%" else null
+            val sp = Prefs.spacing(applicationContext)
+            tile.subtitle = if (enabled) {
+                if (sp >= 2) "1/$sp" else "${Prefs.intensity(applicationContext)}%"
+            } else null
         }
         tile.updateTile()
     }
