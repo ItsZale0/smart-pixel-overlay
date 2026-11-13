@@ -67,6 +67,11 @@ class MainActivity : AppCompatActivity() {
         if (intent?.getBooleanExtra("request_overlay", false) == true) {
             ensureOverlayPermission { maybeApply() }
         }
+
+        if (UpdateUtils.shouldAutoCheck(this)) {
+            UpdateUtils.markChecked(this)
+            checkForUpdates(manual = false)
+        }
     }
 
     override fun onResume() {
@@ -115,9 +120,6 @@ class MainActivity : AppCompatActivity() {
         val intensity = Prefs.intensity(this)
         b.seekIntensity.progress = intensity
         b.textIntensity.text = "$intensity%"
-        val blackLevel = Prefs.blackLevel(this)
-        b.seekBlackLevel.progress = blackLevel
-        b.textBlackLevel.text = "$blackLevel%"
         b.spinnerPattern.setSelection(Prefs.pattern(this).coerceIn(0, 5))
         val shiftSec = Prefs.shiftSeconds(this)
         val shiftIdx = shiftValues.indexOf(shiftSec).let { if (it >= 0) it else 0 }
@@ -159,19 +161,6 @@ class MainActivity : AppCompatActivity() {
                 b.textIntensity.text = "$p%"
                 if (fromUser) {
                     Prefs.setIntensity(this@MainActivity, p)
-                    SmartPixelService.update(this@MainActivity)
-                }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        b.seekBlackLevel.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val p = progress.coerceIn(0, 100)
-                b.textBlackLevel.text = "$p%"
-                if (fromUser) {
-                    Prefs.setBlackLevel(this@MainActivity, p)
                     SmartPixelService.update(this@MainActivity)
                 }
             }
@@ -224,6 +213,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.toast_shizuku_requested, Toast.LENGTH_SHORT).show()
             }
         }
+
+        b.btnCheckUpdates.setOnClickListener { checkForUpdates(manual = true) }
     }
 
     private fun simpleSelect(onSelect: (Int) -> Unit) = object : AdapterView.OnItemSelectedListener {
@@ -325,6 +316,40 @@ class MainActivity : AppCompatActivity() {
                     }
                     updateStatus()
                     onDone(ok)
+                }
+            }
+        }
+    }
+
+    private fun checkForUpdates(manual: Boolean) {
+        if (manual) b.btnCheckUpdates.isEnabled = false
+        thread {
+            val info = UpdateUtils.fetchLatestRelease()
+            runOnUiThread {
+                if (!isFinishing && !isDestroyed) {
+                    b.btnCheckUpdates.isEnabled = true
+                    val current = BuildConfig.VERSION_NAME
+                    if (info == null) {
+                        if (manual) Toast.makeText(this, R.string.update_check_failed, Toast.LENGTH_LONG).show()
+                        return@runOnUiThread
+                    }
+                    if (UpdateUtils.isNewer(info.versionName, current)) {
+                        AlertDialog.Builder(this)
+                            .setTitle(R.string.update_available_title)
+                            .setMessage(getString(R.string.update_available_msg, info.versionName, current))
+                            .setPositiveButton(R.string.grant) { _, _ ->
+                                val url = info.apkUrl
+                                if (url != null) {
+                                    UpdateUtils.downloadAndInstall(this, url, info.versionName)
+                                } else {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.htmlUrl)))
+                                }
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .show()
+                    } else if (manual) {
+                        Toast.makeText(this, getString(R.string.update_latest, current), Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

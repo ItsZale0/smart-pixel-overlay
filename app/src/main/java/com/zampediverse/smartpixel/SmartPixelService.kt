@@ -107,7 +107,6 @@ class SmartPixelService : Service() {
         }
         showOverlay()
         view?.intensity = Prefs.intensity(this)
-        view?.blackLevel = Prefs.blackLevel(this)
         view?.pattern = Prefs.pattern(this)
         handler.removeCallbacks(shiftRunnable)
         val secs = Prefs.shiftSeconds(this)
@@ -140,7 +139,6 @@ class SmartPixelService : Service() {
         }
         val v = SmartPixelView(this)
         v.intensity = Prefs.intensity(this)
-        v.blackLevel = Prefs.blackLevel(this)
         v.pattern = Prefs.pattern(this)
         v.isDrawing = true // Enable drawing
         try {

@@ -25,11 +25,6 @@ class SmartPixelView(context: Context) : View(context) {
             val v = value.coerceIn(0, 100)
             if (field != v) { field = v; cachedKey = null; invalidate() }
         }
-    var blackLevel: Int = 100
-        set(value) {
-            val v = value.coerceIn(0, 100)
-            if (field != v) { field = v; cachedKey = null; invalidate() }
-        }
     var pattern: Int = 0
         set(value) {
             if (field != value) { field = value; cachedKey = null; invalidate() }
@@ -56,14 +51,13 @@ class SmartPixelView(context: Context) : View(context) {
         super.onDraw(canvas)
         if (!drawingEnabled) return
         val pct = intensity
-        if (pct <= 0 || blackLevel <= 0) return
-        val maskColor = Color.argb((blackLevel * 255) / 100, 0, 0, 0)
+        if (pct <= 0) return
         if (pct >= 100) {
-            canvas.drawColor(maskColor)
+            canvas.drawColor(Color.BLACK)
             return
         }
         ensurePattern()
-        val bmp = patternBitmap ?: return
+        if (patternBitmap == null) return
         val ox = (mod(shiftIndex, 4) - 1) * cell.toFloat()
         val oy = (mod(shiftIndex / 4, 4) - 1) * cell.toFloat()
         matrix.reset()
@@ -73,7 +67,7 @@ class SmartPixelView(context: Context) : View(context) {
     }
 
     private fun ensurePattern() {
-        val key = "$pattern:$intensity:$blackLevel:$cell"
+        val key = "$pattern:$intensity:$cell"
         if (key == cachedKey && patternBitmap != null) return
         cachedKey = key
         patternBitmap?.recycle()
@@ -90,12 +84,11 @@ class SmartPixelView(context: Context) : View(context) {
         val total = period * period
         val threshold = (intensity * total + 50) / 100
 
-        val maskColor = Color.argb((blackLevel * 255) / 100, 0, 0, 0)
         val bmp = Bitmap.createBitmap(period * cell, period * cell, Bitmap.Config.ARGB_8888)
         for (r in 0 until period) {
             for (c in 0 until period) {
                 val on = shouldMask(c, r, pattern, total, threshold)
-                val color = if (on) maskColor else Color.TRANSPARENT
+                val color = if (on) Color.BLACK else Color.TRANSPARENT
                 for (dy in 0 until cell) {
                     val py = r * cell + dy
                     for (dx in 0 until cell) {

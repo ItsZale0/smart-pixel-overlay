@@ -5,7 +5,6 @@
     <string name="enable_on_battery_saver">Attiva con risparmio energetico</string>
     <string name="pattern">Pattern (griglia)</string>
     <string name="intensity">Pixel spenti (%)</string>
-    <string name="black_level">Opacità nero (%) (100 = nero totale)</string>
     <string name="shift_timeout">Intervallo spostamento</string>
     <string name="overlay_permission_title">Permesso overlay richiesto</string>
     <string name="overlay_permission_msg">Concedi il permesso "Mostra sopra altre app" per applicare il filtro Smart Pixel.</string>
@@ -13,6 +12,16 @@
     <string name="cancel">Annulla</string>
     <string name="root_grant">Concedi con root</string>
     <string name="shizuku_grant">Concedi con Shizuku</string>
+    <string name="check_updates">Controlla aggiornamenti</string>
+    <string name="update_available_title">Aggiornamento disponibile</string>
+    <string name="update_available_msg">È disponibile una nuova versione (%1$s). Attuale: %2$s.\n\nScaricare e installare?</string>
+    <string name="update_latest">Hai già la versione più recente (%1$s).</string>
+    <string name="update_check_failed">Impossibile controllare gli aggiornamenti.</string>
+    <string name="update_download_started">Download aggiornamento avviato…</string>
+    <string name="update_downloading_title">Download aggiornamento Smart Pixel</string>
+    <string name="update_download_failed">Download fallito. Apertura pagina release…</string>
+    <string name="update_install_failed">Impossibile avviare l\'installer. Apertura pagina release…</string>
+    <string name="update_failed_open">Impossibile aprire la pagina delle release.</string>
     <string name="native_mode">Usa Smart Pixel nativo ROM (se disponibile, root/Shizuku)</string>
     <string name="service_running">Filtro Smart Pixel attivo</string>
     <string name="service_channel">Smart Pixel</string>

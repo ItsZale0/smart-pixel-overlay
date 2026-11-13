@@ -8,7 +8,6 @@ object Prefs {
     const val KEY_ENABLED = "enabled"
     const val KEY_BATTERY_SAVER = "battery_saver"
     const val KEY_INTENSITY = "intensity" // 0..100 percent off (density)
-    const val KEY_BLACK_LEVEL = "black_level" // 0..100 opacity of masked pixels (100 = total black)
     const val KEY_PATTERN = "pattern" // index
     const val KEY_SHIFT = "shift" // seconds, 0 = off
     const val KEY_NATIVE_MODE = "native_mode"
@@ -24,9 +23,6 @@ object Prefs {
 
     fun intensity(context: Context) = sp(context).getInt(KEY_INTENSITY, 25).coerceIn(0, 100)
     fun setIntensity(context: Context, v: Int) = sp(context).edit().putInt(KEY_INTENSITY, v.coerceIn(0, 100)).apply()
-
-    fun blackLevel(context: Context) = sp(context).getInt(KEY_BLACK_LEVEL, 100).coerceIn(0, 100)
-    fun setBlackLevel(context: Context, v: Int) = sp(context).edit().putInt(KEY_BLACK_LEVEL, v.coerceIn(0, 100)).apply()
 
     fun pattern(context: Context) = sp(context).getInt(KEY_PATTERN, 0)
     fun setPattern(context: Context, v: Int) = sp(context).edit().putInt(KEY_PATTERN, v).apply()
