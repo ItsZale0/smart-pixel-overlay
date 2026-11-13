@@ -108,6 +108,7 @@ class SmartPixelService : Service() {
         showOverlay()
         view?.intensity = Prefs.intensity(this)
         view?.pattern = Prefs.pattern(this)
+        view?.spacing = Prefs.spacing(this)
         handler.removeCallbacks(shiftRunnable)
         val secs = Prefs.shiftSeconds(this)
         if (secs > 0) handler.postDelayed(shiftRunnable, secs * 1000L) else {
