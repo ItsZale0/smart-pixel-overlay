@@ -22,7 +22,11 @@ object Prefs {
     fun batterySaver(context: Context) = sp(context).getBoolean(KEY_BATTERY_SAVER, false)
     fun setBatterySaver(context: Context, v: Boolean) = sp(context).edit().putBoolean(KEY_BATTERY_SAVER, v).apply()
 
-    fun intensity(context: Context) = sp(context).getInt(KEY_INTENSITY, 25).coerceIn(0, 100)
+    fun intensity(context: Context): Int {
+        val v = sp(context).getInt(KEY_INTENSITY, 25).coerceIn(0, 100)
+        // Guard against bad persisted states causing full blackout by default-like behavior.
+        return if (v == 100 && !sp(context).contains(KEY_INTENSITY)) 25 else v
+    }
     fun setIntensity(context: Context, v: Int) = sp(context).edit().putInt(KEY_INTENSITY, v.coerceIn(0, 100)).apply()
 
     fun spacing(context: Context) = sp(context).getInt(KEY_SPACING, 0).coerceIn(0, 16)

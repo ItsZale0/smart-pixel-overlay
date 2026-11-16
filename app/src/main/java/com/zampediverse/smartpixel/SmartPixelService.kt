@@ -129,6 +129,7 @@ class SmartPixelService : Service() {
             type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                 WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
@@ -149,6 +150,9 @@ class SmartPixelService : Service() {
         v.isDrawing = true // Enable drawing
         try {
             v.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            v.isClickable = false
+            v.isFocusable = false
+            v.isFocusableInTouchMode = false
             v.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             wm?.addView(v, params)
             view = v

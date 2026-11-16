@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity() {
 
         b.seekIntensity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val p = progress.coerceIn(1, 100)
+                val p = progress.coerceIn(0, 100)
                 b.textIntensity.text = "$p%"
                 if (fromUser) {
                     Prefs.setIntensity(this@MainActivity, p)
