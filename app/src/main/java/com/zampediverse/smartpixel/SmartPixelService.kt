@@ -153,6 +153,7 @@ class SmartPixelService : Service() {
             v.isClickable = false
             v.isFocusable = false
             v.isFocusableInTouchMode = false
+            v.importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
             v.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             wm?.addView(v, params)
             view = v
